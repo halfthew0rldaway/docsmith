@@ -20,10 +20,7 @@ export async function compressPDFAggressive(
     targetMB: number,
     onProgress?: (p: number) => void
 ): Promise<Uint8Array> {
-    // Dynamic import to prevent SSR build issues (DOMMatrix not being defined etc.)
     const pdfjs = await import("pdfjs-dist");
-
-    // Initialize worker
     if (!pdfjs.GlobalWorkerOptions.workerSrc) {
         pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
     }
@@ -33,9 +30,25 @@ export async function compressPDFAggressive(
     const pdf = await loadingTask.promise;
     const numPages = pdf.numPages;
 
-    const scale = numPages > 30 ? 1.0 : 1.3;
+    // Heuristic for resolution based on target size and page count
+    // If we want a large target but have many pages, we still need to downscale
     const currentMB = file.size / (1024 * 1024);
-    let quality = Math.max(0.05, Math.min(0.8, (targetMB / currentMB) * 0.8));
+    const targetSizePerPage = targetMB / numPages;
+
+    // Resolution adjustment (DPI equivalent)
+    // 1.0 scale is typically 72-96 DPI. 1.5 is ~144 DPI.
+    let scale = 1.3;
+    if (targetSizePerPage < 0.05) scale = 0.9; // Very tight target
+    if (targetSizePerPage > 0.3) scale = 1.6;  // Loose target
+
+    // Smarter quality curve: JPEG quality is non-linear.
+    // Quality 0.1 to 0.9.
+    // Rough estimate: size ~ quality^0.5 * pixels
+    const ratio = targetMB / currentMB;
+    let quality = Math.max(0.1, Math.min(0.85, Math.pow(ratio, 0.4) * 0.7));
+
+    // If target is very close to current, don't over-compress
+    if (ratio >= 0.9) quality = 0.92;
 
     const outDoc = await PDFDocument.create();
 
@@ -61,7 +74,9 @@ export async function compressPDFAggressive(
         });
 
         if (onProgress) onProgress((i / numPages) * 100);
-        canvas.height = 0; canvas.width = 0;
+
+        // Cleanup to prevent memory leak
+        canvas.width = 0; canvas.height = 0;
     }
 
     return await outDoc.save({ useObjectStreams: true });
