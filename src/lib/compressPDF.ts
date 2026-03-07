@@ -39,7 +39,15 @@ export async function compressPDFAggressive(
         const outDoc = await PDFDocument.create();
         for (let i = 1; i <= numPages; i++) {
             const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale });
+            // Limit viewport for mobile canvas memory limits (~3000px cap is safe for modern phones)
+            let viewport = page.getViewport({ scale });
+            const MAX_CANVAS_DIMENSION = 2800;
+            if (viewport.width > MAX_CANVAS_DIMENSION || viewport.height > MAX_CANVAS_DIMENSION) {
+                const maxDim = Math.max(viewport.width, viewport.height);
+                const safeScale = scale * (MAX_CANVAS_DIMENSION / maxDim);
+                viewport = page.getViewport({ scale: safeScale });
+            }
+
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d")!;
             canvas.height = viewport.height;
@@ -48,8 +56,11 @@ export async function compressPDFAggressive(
             await page.render({ canvasContext: context, viewport, canvas } as any).promise;
 
             const imageData = canvas.toDataURL("image/jpeg", quality);
-            const base64Data = imageData.split(",")[1];
-            const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+            // Fix iOS Safari memory crash: Decode base64 using native fetch instead of huge JS Arrays
+            const resData = await fetch(imageData);
+            const imageBuffer = await resData.arrayBuffer();
+            const imageBytes = new Uint8Array(imageBuffer);
 
             const pdfImage = await outDoc.embedJpg(imageBytes);
             const newPage = outDoc.addPage([viewport.width, viewport.height]);
@@ -57,8 +68,10 @@ export async function compressPDFAggressive(
                 x: 0, y: 0, width: viewport.width, height: viewport.height,
             });
 
-            // Clean up canvas
-            canvas.width = 0; canvas.height = 0;
+            // Clean up to prevent iOS Canvas and PDF.js memory limits
+            page.cleanup();
+            canvas.width = 0;
+            canvas.height = 0;
         }
         return await outDoc.save({ useObjectStreams: true });
     }

@@ -22,11 +22,11 @@ export default function WelcomeModal() {
 
     return (
         <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-[rgba(26,26,26,0.65)] backdrop-blur-md fade-in"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-[rgba(26,26,26,0.65)] backdrop-blur-md fade-in"
             onClick={close}
         >
             <div
-                className="modal-container-styled relative w-full max-h-[95vh] overflow-y-auto max-w-2xl bg-[#f5f0e8] border-[3px] border-[#1a1a1a] p-6 sm:p-10 md:p-14 shadow-[8px_8px_0_#1a1a1a] md:shadow-[12px_12px_0_#1a1a1a] "
+                className="modal-container-styled relative w-full max-h-[90vh] overflow-y-auto max-w-2xl bg-[#f5f0e8] border-[3px] border-[#1a1a1a] p-5 sm:p-10 md:p-14 shadow-[4px_4px_0_#1a1a1a] sm:shadow-[8px_8px_0_#1a1a1a] md:shadow-[12px_12px_0_#1a1a1a] "
                 style={{ transform: "rotate(-0.5deg)" }}
                 onClick={(e) => e.stopPropagation()}
             >
