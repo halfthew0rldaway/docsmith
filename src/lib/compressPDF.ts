@@ -89,14 +89,18 @@ export async function compressPDFAggressive(
     if (onProgress) onProgress(10);
     let result = await runPass(currentQuality, currentScale);
 
-    // Iterative Correction: If we're over the target, we do ONE more pass with calibrated values.
-    // This is a "Target-Seeking" logic. Better to be slightly under than over.
-    if (result.length > targetBytes * 1.05) {
+    // Iterative Correction:
+    // If we're over the target by 5% OR under by 25%, we run a calibrated second pass.
+    if (result.length > targetBytes * 1.05 || result.length < targetBytes * 0.75) {
         if (onProgress) onProgress(50);
-        // Correct based on how much we were over
-        const overRatio = targetBytes / result.length;
-        currentQuality = Math.max(0.05, currentQuality * overRatio * 0.9);
-        currentScale = Math.max(0.7, currentScale * Math.sqrt(overRatio));
+
+        // Calculate exactly how far off we were
+        const diffRatio = targetBytes / result.length;
+
+        // Responsibly scale quality and resolution based on the difference
+        // SQRT the ratio to gently adjust the curves
+        currentQuality = Math.max(0.05, Math.min(0.95, currentQuality * Math.pow(diffRatio, 0.5)));
+        currentScale = Math.max(0.6, Math.min(2.0, currentScale * Math.pow(diffRatio, 0.3)));
 
         result = await runPass(currentQuality, currentScale);
     }
