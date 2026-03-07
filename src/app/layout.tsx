@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
                     rel="stylesheet"
                 />
+                <link rel="icon" href="/icon.png" />
             </head>
             <body className="min-h-screen">
                 <Navbar />

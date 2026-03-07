@@ -5,6 +5,7 @@ import FileUploader from "@/components/FileUploader";
 import CompressionOptions, { CompressionMode, PresetLevel } from "@/components/CompressionOptions";
 import DownloadButton from "@/components/DownloadButton";
 import { formatBytes } from "@/utils/fileReader";
+import { compressPDFAction } from "@/app/actions/compressAction";
 
 const PDFPreview = dynamic(() => import("@/components/PDFPreview"), { ssr: false });
 
@@ -27,43 +28,41 @@ export default function CompressPage() {
 
     const handleCompress = async () => {
         if (!file) return;
-        setProcessing(true); setProgress(5); setProgressLabel("Uploading…"); setError(""); setResult(null);
+        setProcessing(true); setProgress(15); setProgressLabel("Uploading to server…"); setError(""); setResult(null);
         try {
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("mode", mode);
-            if (mode === "preset") fd.append("preset", preset);
-            else {
-                if (!targetMB || parseFloat(targetMB) <= 0) { setError("Enter a valid target size."); setProcessing(false); return; }
-                fd.append("targetMB", targetMB);
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("mode", mode);
+            if (mode === "preset") formData.append("preset", preset);
+            else formData.append("targetMB", targetMB);
+
+            setProgress(40); setProgressLabel("Compressing (this takes a moment)…");
+
+            // Use Server Action instead of standard fetch to bypass 4MB limit
+            const res = await compressPDFAction(formData);
+
+            setProgress(90); setProgressLabel("Finalizing…");
+
+            // Convert base64 back to Blob
+            const byteCharacters = atob(res.base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
             }
-            setProgress(20); setProgressLabel("Compressing…");
+            const byteArray = new Uint8Array(byteNumbers);
+            const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
 
-            let iv: ReturnType<typeof setInterval> | null = null;
-            if (mode === "target") {
-                let p = 20;
-                iv = setInterval(() => { p = Math.min(p + 5, 88); setProgress(p); setProgressLabel(`Targeting size… ${p}%`); }, 700);
-            }
-
-            const res = await fetch("/api/compress", { method: "POST", body: fd });
-            if (iv) clearInterval(iv);
-            setProgress(95); setProgressLabel("Finalizing…");
-
-            if (!res.ok) {
-                const j = await res.json().catch(() => ({ error: "Unknown error" }));
-                throw new Error(j.error || `Server error ${res.status}`);
-            }
-
-            const blobResponse = await res.blob();
-            const pdfBlob = new Blob([blobResponse as any], { type: "application/pdf" });
-
-            const originalSize = parseInt(res.headers.get("X-Original-Size") || "0") || file.size;
-            const compressedSize = parseInt(res.headers.get("X-Compressed-Size") || "0") || pdfBlob.size;
-
+            setResult({
+                blob: pdfBlob,
+                originalSize: res.originalSize,
+                compressedSize: res.compressedSize
+            });
             setProgress(100); setProgressLabel("Done!");
-            setResult({ blob: pdfBlob, originalSize, compressedSize });
         } catch (e: any) {
-            setError(e.message || "Compression failed.");
+            console.error(e);
+            let msg = e.message || "Compression failed.";
+            if (msg.includes("fetch")) msg = "File too large for server limits. Try a smaller file or a different hosting plan.";
+            setError(msg);
         } finally { setProcessing(false); }
     };
 
