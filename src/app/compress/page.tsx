@@ -5,11 +5,11 @@ import FileUploader from "@/components/FileUploader";
 import CompressionOptions, { CompressionMode, PresetLevel } from "@/components/CompressionOptions";
 import DownloadButton from "@/components/DownloadButton";
 import { formatBytes } from "@/utils/fileReader";
-import { compressPDFAction } from "@/app/actions/compressAction";
+import { compressPDFClient, compressPDFAggressive } from "@/lib/compressPDF";
 
 const PDFPreview = dynamic(() => import("@/components/PDFPreview"), { ssr: false });
 
-const RATIOS: Record<PresetLevel, number> = { low: 0.72, medium: 0.48, high: 0.28 };
+const RATIOS: Record<PresetLevel, number> = { low: 0.85, medium: 0.5, high: 0.25 };
 
 export default function CompressPage() {
     const [files, setFiles] = useState<File[]>([]);
@@ -28,41 +28,35 @@ export default function CompressPage() {
 
     const handleCompress = async () => {
         if (!file) return;
-        setProcessing(true); setProgress(15); setProgressLabel("Uploading to server…"); setError(""); setResult(null);
+        setProcessing(true); setProgress(5); setProgressLabel("Initializing..."); setError(""); setResult(null);
         try {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("mode", mode);
-            if (mode === "preset") formData.append("preset", preset);
-            else formData.append("targetMB", targetMB);
+            let compressedBytes: Uint8Array;
 
-            setProgress(40); setProgressLabel("Compressing (this takes a moment)…");
-
-            // Use Server Action instead of standard fetch to bypass 4MB limit
-            const res = await compressPDFAction(formData);
-
-            setProgress(90); setProgressLabel("Finalizing…");
-
-            // Convert base64 back to Blob
-            const byteCharacters = atob(res.base64);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            if (mode === "preset") {
+                setProgressLabel("Optimizing structure...");
+                // Note: For now, on client, we do structural optimization.
+                // If the user chooses 'low' or 'high', we can adjust strategy.
+                compressedBytes = await compressPDFClient(file);
+                setProgress(100);
+            } else {
+                setProgressLabel("Processing aggressive compression...");
+                const target = parseFloat(targetMB) || 1;
+                compressedBytes = await compressPDFAggressive(file, target, (p) => {
+                    setProgress(p);
+                    setProgressLabel(`Rendering pages: ${Math.round(p)}%`);
+                });
             }
-            const byteArray = new Uint8Array(byteNumbers);
-            const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
 
+            const pdfBlob = new Blob([compressedBytes as any], { type: "application/pdf" });
             setResult({
                 blob: pdfBlob,
-                originalSize: res.originalSize,
-                compressedSize: res.compressedSize
+                originalSize: file.size,
+                compressedSize: pdfBlob.size
             });
-            setProgress(100); setProgressLabel("Done!");
+            setProgress(100); setProgressLabel("Compression complete!");
         } catch (e: any) {
             console.error(e);
-            let msg = e.message || "Compression failed.";
-            if (msg.includes("fetch")) msg = "File too large for server limits. Try a smaller file or a different hosting plan.";
-            setError(msg);
+            setError(`Compression failed: ${e.message}. This might happen with very large or complex PDFs.`);
         } finally { setProcessing(false); }
     };
 
@@ -79,7 +73,7 @@ export default function CompressPage() {
                     <span className="ink-label" style={{ backgroundColor: "var(--accent-red)", position: "relative", zIndex: 11 }}>shrink</span>
                 </div>
                 <h1 className="font-display fade-in-up" style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", color: "var(--ink)", letterSpacing: "-0.02em", marginBottom: 6 }}>Compress PDF</h1>
-                <p className="font-body fade-in-up stagger-1" style={{ fontSize: "0.9rem", color: "var(--ink-muted)" }}>Reduce file size using Ghostscript — by quality preset or target file size.</p>
+                <p className="font-body fade-in-up stagger-1" style={{ fontSize: "0.9rem", color: "var(--ink-muted)" }}>Zero-server compression. Everything stays in your browser. Fast, private, and powerful.</p>
                 <div className="section-divider fade-in-up stagger-1" style={{ marginTop: 20 }} />
             </div>
 
@@ -119,7 +113,7 @@ export default function CompressPage() {
                                 <div className="paper-card" style={{ padding: "24px", position: "relative", marginBottom: 32 }}>
                                     <div className="tape-strip wiggle-tape" style={{ backgroundColor: "var(--tape-green)", top: -11, left: 28, transform: "rotate(2deg)" }} />
                                     <h3 className="font-display" style={{ fontSize: "1.3rem", color: "var(--ink)", marginBottom: 20 }}>
-                                        Compressed!{" "}
+                                        Compressed Locally!{" "}
                                         {reduction !== null && reduction > 0 && <span style={{ color: "var(--accent-teal)" }}>−{reduction}%</span>}
                                     </h3>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 0, border: "2px solid var(--ink)", marginBottom: 16 }}>
@@ -152,7 +146,7 @@ export default function CompressPage() {
                         {!result && (
                             <div className="fade-in-up stagger-4">
                                 <button className="btn-accent btn-tactile" style={{ backgroundColor: "var(--accent-red)", padding: "12px 32px", fontSize: "0.9rem" }} onClick={handleCompress} disabled={processing}>
-                                    {processing ? progressLabel || "Processing…" : "Compress PDF"}
+                                    {processing ? progressLabel || "Compressing..." : "Compress PDF"}
                                 </button>
                                 {processing && (
                                     <div style={{ marginTop: 16 }}>
