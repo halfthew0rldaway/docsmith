@@ -43,7 +43,7 @@ export default function WelcomeModal() {
 
                 <div className="font-body space-y-5 text-[#1a1a1a] text-lg leading-relaxed">
                     <p>
-                        “If you were hoping for another bloated PDF site that locks basic buttons behind a ‘Pro’ subscription, this might feel unfamiliar. No paywall for rotating a page. No ‘free trial’ that ends the moment you click something useful.”
+                        If you were hoping for another bloated PDF site that locks basic buttons behind a ‘Pro’ subscription, this might feel unfamiliar. No paywall for rotating a page. No ‘free trial’ that ends the moment you click something useful.
                     </p>
                     <p>
                         I actually built this project for my girlfriend. She was tired of <strong>"free"</strong> sites that couldn't hit a <em>Target File Size</em> if their existence depended on it. Watching someone you love get frustrated by a 40MB PDF that refuses to shrink to 2MB is a special kind of modern torture.
