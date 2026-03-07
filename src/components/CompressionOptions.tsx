@@ -40,7 +40,7 @@ export default function CompressionOptions({
                             cursor: "pointer", transition: "background 0.1s",
                         }}
                     >
-                        {m === "preset" ? "By Quality" : "By Target Size"}
+                        {m === "preset" ? "Basic Presets" : "Exact Target Size"}
                     </button>
                 ))}
             </div>
