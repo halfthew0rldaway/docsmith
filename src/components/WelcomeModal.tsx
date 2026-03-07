@@ -43,7 +43,7 @@ export default function WelcomeModal() {
 
                 <div className="font-body space-y-5 text-[#1a1a1a] text-lg leading-relaxed">
                     <p>
-                        Listen, if you were looking for a bloated utility that tries to up-sell you a "Pro" subscription just to rotate a single page, you're on the wrong site. You should probably leave before the aesthetics overwhelm you.
+                        “If you were hoping for another bloated PDF site that locks basic buttons behind a ‘Pro’ subscription, this might feel unfamiliar. No paywall for rotating a page. No ‘free trial’ that ends the moment you click something useful.”
                     </p>
                     <p>
                         I actually built this project for my girlfriend. She was tired of <strong>"free"</strong> sites that couldn't hit a <em>Target File Size</em> if their existence depended on it. Watching someone you love get frustrated by a 40MB PDF that refuses to shrink to 2MB is a special kind of modern torture.
@@ -52,7 +52,7 @@ export default function WelcomeModal() {
                         So here’s the deal. Docsmith is fast, private, and everything runs directly in your browser. No uploads to some mystery server. You tell it the file size you want, and it actually tries to get you there.
                     </p>
                     <p className="font-mono text-sm pt-4 text-[#7a7060]">
-                        — Signed, the guy who spent too much time on these animations.
+                        — Sincerely/Sarcastically, the developer who finds neobrutalist borders more therapeutic than your subscription revenue.
                     </p>
                 </div>
 
