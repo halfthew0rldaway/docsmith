@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Docsplice
 
-## Getting Started
+A browser-first PDF utility. Merge, split, rotate, extract pages, and compress PDFs.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router, TypeScript)
+- **Tailwind CSS v4** (scrapbook design system)
+- **pdf-lib** — client-side PDF manipulation
+- **pdfjs-dist** — PDF preview rendering
+- **file-saver** — download trigger
+- **Ghostscript** — server-side compression (via API route)
+
+## Features
+
+| Tool | Engine | Description |
+|---|---|---|
+| Merge PDF | pdf-lib (browser) | Combine PDFs with drag-reorder |
+| Split PDF | pdf-lib (browser) | Split by all pages or custom ranges |
+| Rotate Pages | pdf-lib (browser) | Rotate all or specific pages |
+| Extract Pages | pdf-lib (browser) | Pull specific pages into a new PDF |
+| Compress PDF | Ghostscript (server) | Presets or exact target file size |
+
+## Project Structure
+
+```
+src/
+  app/
+    page.tsx               # Homepage tool grid
+    merge/page.tsx
+    split/page.tsx
+    rotate/page.tsx
+    extract/page.tsx
+    compress/page.tsx
+    api/compress/route.ts  # Ghostscript API route
+  components/
+    Navbar.tsx
+    ToolCard.tsx
+    FileUploader.tsx
+    PDFPreview.tsx
+    CompressionOptions.tsx
+    DownloadButton.tsx
+  lib/
+    mergePDF.ts
+    splitPDF.ts
+    rotatePDF.ts
+    extractPDF.ts
+  utils/
+    fileReader.ts
+    downloadFile.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+## Compression API
 
-To learn more about Next.js, take a look at the following resources:
+`POST /api/compress` — requires Ghostscript installed on the server.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+FormData fields:
+  file     File     PDF file (max 50 MB)
+  mode     string   "preset" | "target"
+  preset   string   "low" | "medium" | "high"  (when mode=preset)
+  targetMB string   target size in MB           (when mode=target)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Response headers include `X-Original-Size` and `X-Compressed-Size`.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploy to Vercel. For compression, the server must have Ghostscript available. On Vercel's standard runtime, compression requires a custom Docker layer or a self-hosted Node.js server.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+All other tools (Merge, Split, Rotate, Extract) run fully client-side and work on any static/edge deployment.
