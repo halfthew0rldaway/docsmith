@@ -49,7 +49,7 @@ export default function WelcomeModal() {
                         I actually built this project for my girlfriend. She was tired of <strong>"free"</strong> sites that couldn't hit a <em>Target File Size</em> if their existence depended on it. Watching someone you love get frustrated by a 40MB PDF that refuses to shrink to 2MB is a special kind of modern torture.
                     </p>
                     <p>
-                        So here's the deal: Docsmith is fast, it's private (everything happens right in your browser), and unlike your ex, it actually listens when you tell it exactly what size you want.
+                        So here’s the deal. Docsmith is fast, private, and everything runs directly in your browser. No uploads to some mystery server. You tell it the file size you want, and it actually tries to get you there.
                     </p>
                     <p className="font-mono text-sm pt-4 text-[#7a7060]">
                         — Signed, the guy who spent too much time on these animations.
