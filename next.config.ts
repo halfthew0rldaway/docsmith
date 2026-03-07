@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  turbopack: {},
+  // Increase server action body size limit to 50MB
   experimental: {
     serverActions: {
-      bodySizeLimit: "52mb",
+      bodySizeLimit: "50mb",
     },
   },
 };

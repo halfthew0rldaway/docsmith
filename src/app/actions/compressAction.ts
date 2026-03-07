@@ -20,13 +20,16 @@ export async function compressPDFAction(formData: FormData) {
     const presetRaw = formData.get("preset") as string | null;
     const targetMBRaw = formData.get("targetMB") as string | null;
 
-    if (!file) throw new Error("No file provided");
+    if (!file) throw new Error("No file uploaded");
 
     const id = randomUUID();
     const inputPath = join(tmpdir(), `${id}_input.pdf`);
     const outputPath = join(tmpdir(), `${id}_output.pdf`);
 
     try {
+        // Log for debugging on Vercel
+        console.log(`Processing file: ${file.name}, size: ${file.size}, mode: ${mode}`);
+
         const bytes = new Uint8Array(await file.arrayBuffer());
         await writeFile(inputPath, bytes);
 
@@ -47,8 +50,7 @@ export async function compressPDFAction(formData: FormData) {
             const res_levels = [150, 150, 120, 100, 96, 72, 72, 72];
             const pdfSettings = ["/ebook", "/ebook", "/ebook", "/ebook", "/screen", "/screen", "/screen", "/screen"];
 
-            let bestPath = outputPath;
-            let bestSize = Infinity;
+            let bestSourcePath = "";
 
             for (let i = 0; i < qualities.length; i++) {
                 const iterPath = join(tmpdir(), `${id}_iter${i}.pdf`);
@@ -60,23 +62,26 @@ export async function compressPDFAction(formData: FormData) {
                     `-dJPEGQ=${qualities[i]}`, `-sOutputFile=${iterPath}`, inputPath,
                 ].join(" ");
 
-                await execAsync(cmd, { timeout: 60000 });
+                await execAsync(cmd, { timeout: 45000 });
                 const s = (await stat(iterPath)).size;
-                if (s < bestSize) { bestSize = s; bestPath = iterPath; }
+                bestSourcePath = iterPath;
                 if (s <= targetBytes) break;
             }
-            // Final read from bestPath
-            const out = await readFile(bestPath);
-            // Cleanup all iteration files
-            for (let i = 0; i < 8; i++) await unlink(join(tmpdir(), `${id}_iter${i}.pdf`)).catch(() => { });
-            await unlink(inputPath).catch(() => { });
+
+            const out = await readFile(bestSourcePath);
+            // Quick cleanup
+            await Promise.all([
+                unlink(inputPath).catch(() => { }),
+                ...Array.from({ length: 8 }, (_, i) => unlink(join(tmpdir(), `${id}_iter${i}.pdf`)).catch(() => { }))
+            ]);
+
             return {
                 base64: Buffer.from(out).toString("base64"),
                 originalSize: file.size,
                 compressedSize: out.length,
             };
         } else {
-            throw new Error("Invalid mode");
+            throw new Error("Invalid compression mode");
         }
 
         const outBytes = await readFile(outputPath);
@@ -90,8 +95,8 @@ export async function compressPDFAction(formData: FormData) {
         };
     } catch (err: any) {
         console.error("Action error:", err);
+        // Clean up input
         await unlink(inputPath).catch(() => { });
-        await unlink(outputPath).catch(() => { });
-        throw new Error(err.message || "Compression failed. This server might not have Ghostscript installed.");
+        throw new Error(`Compression failed: ${err.message}. Ensure Ghostscript is available.`);
     }
 }
