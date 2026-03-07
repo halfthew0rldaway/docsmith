@@ -33,14 +33,18 @@ export default function CompressPage() {
             let compressedBytes: Uint8Array;
 
             if (mode === "preset") {
-                setProgressLabel("Optimizing structure...");
-                // Note: For now, on client, we do structural optimization.
-                // If the user chooses 'low' or 'high', we can adjust strategy.
-                compressedBytes = await compressPDFClient(file);
-                setProgress(100);
+                setProgressLabel("Applying preset compression...");
+                const target = originalSizeMB ? originalSizeMB * RATIOS[preset] : 1;
+                // If the preset target is larger than the file, we just aim for 90%
+                const finalTarget = target >= (originalSizeMB || 0) ? (originalSizeMB || 1) * 0.9 : target;
+                compressedBytes = await compressPDFAggressive(file, finalTarget, (p) => {
+                    setProgress(p);
+                    setProgressLabel(`Rendering pages: ${Math.round(p)}%`);
+                });
             } else {
-                setProgressLabel("Processing aggressive compression...");
-                const target = parseFloat(targetMB) || 1;
+                setProgressLabel("Processing exact target compression...");
+                let target = parseFloat(targetMB) || 1;
+                if (originalSizeMB && target >= originalSizeMB) target = originalSizeMB * 0.99; // Cap it
                 compressedBytes = await compressPDFAggressive(file, target, (p) => {
                     setProgress(p);
                     setProgressLabel(`Rendering pages: ${Math.round(p)}%`);

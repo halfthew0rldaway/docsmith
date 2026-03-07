@@ -57,10 +57,15 @@ export async function compressPDFAggressive(
 
             const imageData = canvas.toDataURL("image/jpeg", quality);
 
-            // Fix iOS Safari memory crash: Decode base64 using native fetch instead of huge JS Arrays
-            const resData = await fetch(imageData);
-            const imageBuffer = await resData.arrayBuffer();
+            // Fix Safari Memory & Network errors: Manually parse base64 using a chunked array buffer.
+            // fetch(dataURL) fails on iOS when string is large. Array.from maps OOM. This loop is safest.
+            const base64Data = imageData.split(",")[1];
+            const byteString = atob(base64Data);
+            const imageBuffer = new ArrayBuffer(byteString.length);
             const imageBytes = new Uint8Array(imageBuffer);
+            for (let j = 0; j < byteString.length; j++) {
+                imageBytes[j] = byteString.charCodeAt(j);
+            }
 
             const pdfImage = await outDoc.embedJpg(imageBytes);
             const newPage = outDoc.addPage([viewport.width, viewport.height]);
