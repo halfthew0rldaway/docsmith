@@ -61,7 +61,7 @@ const TOOLS = [
 
 export default function HomePage() {
     return (
-        <div className="w-full px-6 md:px-10 lg:px-16 py-10">
+        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-8 md:py-10">
             {/* Hero */}
             <section className="mb-14 fade-in-up">
                 <div className="mb-4">

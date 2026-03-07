@@ -14,7 +14,7 @@ export default function Navbar() {
     const path = usePathname();
     return (
         <header style={{ backgroundColor: "var(--ink)", borderBottom: "3px solid var(--ink)" }} className="w-full sticky top-0 z-50">
-            <div className="flex items-center justify-between px-6 py-3 gap-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 sm:py-3 gap-4 sm:gap-6">
                 <Link href="/" className="flex items-center gap-3 flex-shrink-0">
                     <span className="font-display text-2xl" style={{ color: "var(--paper)", letterSpacing: "-0.02em" }}>
                         doc<span style={{ color: "var(--tape-yellow)" }}>smith</span>
@@ -31,7 +31,7 @@ export default function Navbar() {
                     </span>
                 </Link>
 
-                <nav className="flex items-center gap-0 overflow-x-auto">
+                <nav className="flex flex-wrap justify-center items-center gap-1 sm:gap-0">
                     {navTools.map((t) => {
                         const active = path === t.href;
                         return (
@@ -41,7 +41,7 @@ export default function Navbar() {
                                 className="font-mono"
                                 style={{
                                     fontSize: "0.72rem", letterSpacing: "0.08em", textTransform: "uppercase",
-                                    padding: "7px 16px", display: "inline-block", whiteSpace: "nowrap",
+                                    padding: "6px 10px", display: "inline-block", whiteSpace: "nowrap",
                                     backgroundColor: active ? "var(--tape-yellow)" : "transparent",
                                     color: active ? "var(--ink)" : "rgba(245,240,232,0.65)",
                                     transition: "background 0.12s, color 0.12s",

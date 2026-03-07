@@ -51,7 +51,7 @@ export default function MergePage() {
     const previewFile = resultBlob || files[0];
 
     return (
-        <div className="w-full px-6 md:px-10 lg:px-16 py-10">
+        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 py-8 md:py-10">
             {/* Header */}
             <div style={{ marginBottom: 32, position: "relative" }}>
                 <div style={{ position: "relative", display: "inline-block", marginBottom: 12 }}>

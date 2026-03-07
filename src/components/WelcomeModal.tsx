@@ -26,7 +26,7 @@ export default function WelcomeModal() {
             onClick={close}
         >
             <div
-                className="modal-container-styled relative w-full max-w-2xl bg-[#f5f0e8] border-3 border-[#1a1a1a] p-10 md:p-14 shadow-[12px_12px_0_#1a1a1a] "
+                className="modal-container-styled relative w-full max-h-[95vh] overflow-y-auto max-w-2xl bg-[#f5f0e8] border-[3px] border-[#1a1a1a] p-6 sm:p-10 md:p-14 shadow-[8px_8px_0_#1a1a1a] md:shadow-[12px_12px_0_#1a1a1a] "
                 style={{ transform: "rotate(-0.5deg)" }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -36,12 +36,12 @@ export default function WelcomeModal() {
 
                 <div className="mb-8">
                     <span className="inline-block bg-[#1a1a1a] color-[#f5f0e8] px-3 py-1 font-mono text-[0.65rem] font-bold tracking-widest uppercase mb-4" style={{ backgroundColor: "#1a1a1a", color: "#f5f0e8" }}>MANIFESTO V1.0</span>
-                    <h1 className="font-display text-4xl md:text-5xl text-[#1a1a1a] leading-tight tracking-tight mt-2">
+                    <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-[#1a1a1a] leading-tight tracking-tight mt-2">
                         Docsmith: The Actual Good One.
                     </h1>
                 </div>
 
-                <div className="font-body space-y-5 text-[#1a1a1a] text-lg leading-relaxed">
+                <div className="font-body space-y-4 md:space-y-5 text-[#1a1a1a] text-base md:text-lg leading-relaxed">
                     <p>
                         If you were hoping for another bloated PDF site that locks basic buttons behind a ‘Pro’ subscription, this might feel unfamiliar. No paywall for rotating a page. No ‘free trial’ that ends the moment you click something useful.
                     </p>

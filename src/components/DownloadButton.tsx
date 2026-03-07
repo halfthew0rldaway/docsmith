@@ -75,11 +75,11 @@ export default function DownloadButton({ blob, filename, label = "Download PDF",
                 </div>
             </div>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                <button className="btn-accent btn-tactile" onClick={handleDownload} style={{ backgroundColor: "var(--ink)", color: "var(--paper)" }}>
+            <div className="flex flex-col sm:flex-row gap-3">
+                <button className="btn-accent btn-tactile w-full sm:w-auto justify-center" onClick={handleDownload} style={{ backgroundColor: "var(--ink)", color: "var(--paper)" }}>
                     <IconDownload /> {label}
                 </button>
-                <button className="btn-outline btn-tactile" onClick={onReset}>
+                <button className="btn-outline btn-tactile w-full sm:w-auto justify-center" onClick={onReset}>
                     <IconRefresh /> Start Over
                 </button>
             </div>

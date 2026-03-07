@@ -119,9 +119,9 @@ export default function FileUploader({
                                 borderTop: i > 0 ? "1px solid var(--paper-mid)" : undefined,
                             }}
                         >
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, flex: 1, minWidth: 0 }}>
                                 <span style={{ color: "var(--ink-muted)", flexShrink: 0 }}><IconFile /></span>
-                                <span className="font-mono text-sm" style={{ color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 260 }}>
+                                <span className="font-mono text-sm" style={{ color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {f.name}
                                 </span>
                             </div>
