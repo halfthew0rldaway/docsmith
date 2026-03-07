@@ -52,7 +52,7 @@ export default function WelcomeModal() {
                         So here’s the deal. Docsmith is fast, private, and everything runs directly in your browser. No uploads to some mystery server. You tell it the file size you want, and it actually tries to get you there.
                     </p>
                     <p className="font-mono text-sm pt-4 text-[#7a7060]">
-                        — Sincerely/Sarcastically, the developer who finds neobrutalist borders more therapeutic than your subscription revenue.
+                        — Signed, the guy who made this because someone he loves deserved better tools.
                     </p>
                 </div>
 
