@@ -1,4 +1,4 @@
-# Docsplice
+# Docsmith - Senin 27 April 2026
 
 A browser-first PDF utility. Merge, split, rotate, extract pages, and compress PDFs.
 
